@@ -1,5 +1,5 @@
 {
-	"name": "typescript-outline-view",
+	"name": "vscode-typescript-outline-view",
 	"displayName": "typescript-outline-view",
 	"description": "shows a friendly representation of current TypeScript/JavaScript source file's AST in the activity bar. Supports filtering and different views of the AST",
 	"version": "0.0.1",
