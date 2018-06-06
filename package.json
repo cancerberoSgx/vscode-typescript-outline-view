@@ -1,0 +1,173 @@
+{
+	"name": "typescript-outline-view",
+	"displayName": "typescript-outline-view",
+	"description": "shows a friendly representation of current TypeScript/JavaScript source file's AST in the activity bar. Supports filtering and different views of the AST",
+	"version": "0.0.1",
+	"publisher": "cancerberosgx",
+	"engines": {
+		"vscode": "^1.23.0"
+	},
+	"scripts": {
+		"vscode:prepublish": "tsc -p ./",
+		"watch": "tsc --watch -p ./",
+		"build": "tsc -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install"
+	},
+	"enableProposedApi": true,
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:nodeDependencies",
+		"onView:ftpExplorer",
+		"onView:jsonOutline",
+		"onLanguage:json",
+		"onLanguage:jsonc"
+	],
+	"main": "./out/src/extension",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "package-explorer",
+					"title": "Package Explorer",
+					"icon": "media/dep.svg"
+				}
+			]
+		},
+		"views": {
+			"package-explorer": [
+				{
+					"id": "nodeDependencies",
+					"name": "Node Dependencies"
+				}
+			],
+			"explorer": [
+				{
+					"id": "jsonOutline",
+					"name": "Json Outline",
+					"when": "jsonOutlineEnabled"
+				},
+				{
+					"id": "ftpExplorer",
+					"name": "FTP Explorer"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "nodeDependencies.addEntry",
+				"title": "Add"
+			},
+			{
+				"command": "nodeDependencies.refreshEntry",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "nodeDependencies.deleteEntry",
+				"title": "Delete"
+			},
+			{
+				"command": "ftpExplorer.refresh",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "ftpExplorer.openFtpResource",
+				"title": "Open FTP Resource"
+			},
+			{
+				"command": "ftpExplorer.revealResource",
+				"title": "Reveal in FTP View"
+			},
+			{
+				"command": "jsonOutline.refresh",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "jsonOutline.refreshNode",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "jsonOutline.renameNode",
+				"title": "Rename"
+			}
+		],
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "ftpExplorer.revealResource"
+				}
+			],
+			"view/title": [
+				{
+					"command": "jsonOutline.refresh",
+					"when": "view == jsonOutline",
+					"group": "navigation"
+				},
+				{
+					"command": "nodeDependencies.refreshEntry",
+					"when": "view == nodeDependencies",
+					"group": "navigation"
+				},
+				{
+					"command": "nodeDependencies.addEntry",
+					"when": "view == nodeDependencies"
+				},
+				{
+					"command": "ftpExplorer.refresh",
+					"when": "view == ftpExplorer",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "nodeDependencies.deleteEntry",
+					"when": "view == nodeDependencies && viewItem == dependency"
+				},
+				{
+					"command": "jsonOutline.renameNode",
+					"when": "view == jsonOutline"
+				},
+				{
+					"command": "jsonOutline.refreshNode",
+					"when": "view == jsonOutline",
+					"group": "inline"
+				}
+			]
+		},
+		"configuration": [
+			{
+				"title": "JSON Outline",
+				"properties": {
+					"jsonOutline.autorefresh": {
+						"type": "boolean",
+						"default": false
+					}
+				}
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript": "^2.9.1",
+		"vscode": "^1.23.0",
+		"tslint": "^5.10.0",
+		"@types/node": "^10.0.4",
+		"@types/mocha": "^5.2.0"
+	}
+}
