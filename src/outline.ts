@@ -1,12 +1,14 @@
-import * as vscode from 'vscode';
 import * as path from 'path';
+import Project, * as tsa from 'ts-simple-ast';
+import * as vscode from 'vscode';
 
-export class JsonOutlineProvider implements vscode.TreeDataProvider<number> {
+export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<number | null> = new vscode.EventEmitter<number | null>();
-	readonly onDidChangeTreeData: vscode.Event<number | null> = this._onDidChangeTreeData.event;
+	lastFileName: string;
+	private _onDidChangeTreeData: vscode.EventEmitter<tsa.Node | null> = new vscode.EventEmitter<tsa.Node | null>();
+	readonly onDidChangeTreeData: vscode.Event<tsa.Node | null> = this._onDidChangeTreeData.event;
 
-	// private text: string;
+	private text: string;
 	private editor: vscode.TextEditor;
 	private autoRefresh: boolean = true;
 
@@ -21,7 +23,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<number> {
 		this.onActiveEditorChanged();
 	}
 
-	refresh(offset?: number): void {
+	refresh(offset?: tsa.Node): void {
 		this.parseTree();
 		if (offset) {
 			this._onDidChangeTreeData.fire(offset);
@@ -30,7 +32,133 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<number> {
 		}
 	}
 
-	rename(offset: number): void {
+
+	private onActiveEditorChanged(): void {
+		if (vscode.window.activeTextEditor) {
+			if (vscode.window.activeTextEditor.document.uri.scheme === 'file') {
+				const enabled = vscode.window.activeTextEditor.document.languageId === 'typescript' || vscode.window.activeTextEditor.document.languageId === 'javascript';
+				vscode.commands.executeCommand('setContext', 'jsonOutlineEnabled', enabled);
+				if (enabled) {
+					this.refresh();
+				}
+			}
+		} else {
+			vscode.commands.executeCommand('setContext', 'jsonOutlineEnabled', false);
+		}
+	}
+
+	private async onDocumentChanged(changeEvent: vscode.TextDocumentChangeEvent): Promise<void> {
+		if (this.autoRefresh && changeEvent.document.uri.toString() === this.editor.document.uri.toString()) {
+			for (const change of changeEvent.contentChanges) {
+				await this.parseTree();
+				this._onDidChangeTreeData.fire(this.currentSourceFile || null); // TODO: refined
+			}
+		}
+	}
+
+	private async parseTree(): Promise<any> {
+		this.editor = vscode.window.activeTextEditor;
+		return this.getCurrentSourceFile()
+	}
+
+	private project: tsa.Project
+	private currentSourceFile: tsa.SourceFile
+
+	private async getCurrentSourceFile(): Promise<tsa.SourceFile> {
+		if (!this.project) {
+			const files = await vscode.workspace.findFiles('**/tsconfig.json')
+			const tsconfig = files[0].fsPath//TODO: check null or more than one		
+			// console.log(vscode.window.activeTextEditor.document.fileName, tsconfig)
+			this.lastFileName = vscode.window.activeTextEditor.document.fileName
+			try {
+				this.project = new Project({ tsConfigFilePath: tsconfig })
+			} catch (error) {
+				debugger //TODO: log
+			}
+		}
+		if (!this.currentSourceFile || this.lastFileName !== vscode.window.activeTextEditor.document.fileName) {
+			this.lastFileName = vscode.window.activeTextEditor.document.fileName
+			try {
+				this.currentSourceFile = this.project.getSourceFileOrThrow(this.lastFileName)
+			} catch (error) {
+				debugger //TODO: log
+			}
+		}
+		return Promise.resolve(this.currentSourceFile)
+	}
+
+
+	async getChildren(offset?: tsa.Node): Promise<tsa.Node[]> {
+		await this.getCurrentSourceFile()
+		const target = (offset||this.currentSourceFile)
+		console.log('getChildren length:' + target.getChildren().length);
+
+		return Promise.resolve(target.getChildren())
+		// if (offset) {
+		// 	const path = json.getLocation(this.text, offset).path
+		// 	const node = json.findNodeAtLocation(this.tree, path);
+		// 	return Promise.resolve(this.getChildrenOffsets(node));
+		// } else {
+		// 	return Promise.resolve(this.tree ? this.getChildrenOffsets(this.tree) : []);
+		// }
+		// return Promise.resolve([1])
+	}
+
+	counter = 0
+	getTreeItem(node: tsa.Node): vscode.TreeItem {
+		let hasChildren = node.getChildren()&& node.getChildren().length
+		let treeItem: vscode.TreeItem = new vscode.TreeItem(this.getLabel(node), 
+		// vscode.TreeItemCollapsibleState.Collapsed
+		hasChildren ? 
+		// vscode.TreeItemCollapsibleState.Expanded : // TODO: perhaps some special nodes like decls could be expanded
+		vscode.TreeItemCollapsibleState.Collapsed
+			: vscode.TreeItemCollapsibleState.None
+		);
+		treeItem.command = {
+			command: 'extension.openJsonSelection',
+			title: '',
+			arguments: [node]
+		};
+		treeItem.iconPath = this.getIcon(node);
+		return treeItem
+	}
+
+
+
+	select(node: tsa.Node) { 
+		this.editor.selection = new vscode.Selection(vscode.window.activeTextEditor.document.positionAt(node.getFullStart()),vscode.window.activeTextEditor.document.positionAt(node.getEnd()));
+	}
+
+
+	private getIcon(node: tsa.Node): any { // TODO: decide icons
+		if (tsa.TypeGuards.isStatement(node)) {
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'boolean.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'boolean.svg'))
+			}
+		}
+		if (tsa.TypeGuards.isLiteralExpression(node) || tsa.TypeGuards.isLiteralLikeNode(node)) {
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'string.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'string.svg'))
+			}
+		}
+		if (tsa.TypeGuards.isStatementedNode(node)) {
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'number.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'number.svg'))
+			}
+		}
+		return null;
+	}
+
+	private getLabel(node: tsa.Node): string {
+		return node.getKindName() // TODO: decide labels
+	}
+
+
+
+	rename(offset: tsa.Node): void {
 		vscode.window.showInputBox({ placeHolder: 'Enter the new label' })
 			.then(value => {
 				if (value !== null && value !== undefined) {
@@ -50,70 +178,4 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<number> {
 				}
 			});
 	}
-
-	private onActiveEditorChanged(): void {
-		// debugger;
-		if (vscode.window.activeTextEditor) {
-			if (vscode.window.activeTextEditor.document.uri.scheme === 'file') {
-				// debugger
-				const enabled = vscode.window.activeTextEditor.document.languageId === 'typescript' || vscode.window.activeTextEditor.document.languageId === 'javascript';
-				vscode.commands.executeCommand('setContext', 'jsonOutlineEnabled', enabled);
-				if (enabled) {
-					this.refresh();
-				}
-			}
-		} else {
-			vscode.commands.executeCommand('setContext', 'jsonOutlineEnabled', false);
-		}
-	}
-
-	private onDocumentChanged(changeEvent: vscode.TextDocumentChangeEvent): void {
-// debugger
-		if (this.autoRefresh && changeEvent.document.uri.toString() === this.editor.document.uri.toString()) {
-			for (const change of changeEvent.contentChanges) {
-				// const path = json.getLocation(this.text, this.editor.document.offsetAt(change.range.start)).path;
-				// path.pop();
-				// const node = path.length ? json.findNodeAtLocation(this.tree, path) : void 0;
-				// this.parseTree();
-				// this._onDidChangeTreeData.fire(node ? node.offset : void 0);
-			}
-		}
-	}
-
-	private parseTree(): void {
-		// this.text = '';
-		// this.tree = null;
-		this.editor = vscode.window.activeTextEditor;
-		if (this.editor && this.editor.document) {
-			// this.text = this.editor.document.getText();
-			// debugger;
-			// this.tree = json.parseTree(this.text);
-		}
-	}
-
-	getChildren(offset?: number): Thenable<number[]> {
-		// debugger;
-		// if (offset) {
-		// 	const path = json.getLocation(this.text, offset).path
-		// 	const node = json.findNodeAtLocation(this.tree, path);
-		// 	return Promise.resolve(this.getChildrenOffsets(node));
-		// } else {
-		// 	return Promise.resolve(this.tree ? this.getChildrenOffsets(this.tree) : []);
-		// }
-		return Promise.resolve([1])
-	}
-
-	counter: 0
-	getTreeItem(offset: number): vscode.TreeItem {
-		// debugger;
-		return {
-			label: 'seba'+offset+this.counter++, id: 'seba'+offset+this.counter++
-		}
-	}
-
-	// select(range: vscode.Range) {
-	// 	this.editor.selection = new vscode.Selection(range.start, range.end);
-	// 	debugger
-	// }
-
 }
