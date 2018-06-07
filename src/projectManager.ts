@@ -1,5 +1,6 @@
 import Project, * as tsa from 'ts-simple-ast';
 import * as vscode from 'vscode';
+import { existsSync } from 'fs';
 
 export interface ProjectManagerOptions {
   mode: 'getChildren' | 'forEachChildren',
@@ -42,9 +43,12 @@ export class ProjectManager {
       this.lastFileName = vscode.window.activeTextEditor.document.fileName
       try {
         this._currentSourceFile = this.project.getSourceFile(this.lastFileName)
-        if (!this.currentSourceFile) {// not in tsa project (new file)
+        if (!this.currentSourceFile && !existsSync(this.lastFileName)) {// not in tsa project (new file)
           this._currentSourceFile = this.project.createSourceFile(this.lastFileName, vscode.window.activeTextEditor.document.getText())
-        } else if (vscode.window.activeTextEditor.document.isDirty) {
+        } else if (!this.currentSourceFile){
+          this._currentSourceFile = this.project.addExistingSourceFile(this.lastFileName)
+        }
+        if (vscode.window.activeTextEditor.document.isDirty) {
           this.currentSourceFile.replaceWithText(vscode.window.activeTextEditor.document.getText())
         }
       } catch (error) {

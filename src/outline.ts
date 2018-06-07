@@ -17,9 +17,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	}
 	treeView: vscode.TreeView<tsa.Node>
 	constructor(private context: vscode.ExtensionContext) {
-
-
-
 		vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
 		vscode.workspace.onDidChangeTextDocument(e => this.onDocumentChanged(e));
 		this.autoRefresh = vscode.workspace.getConfiguration('jsonOutline').get('autorefresh');
@@ -30,9 +27,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		this.project = new ProjectManager()
 		vscode.window.onDidChangeTextEditorSelection(e => this.onTextEditorSelectionChanged(e))
 
-
-	this.treeView = vscode.window.createTreeView('jsonOutline', {treeDataProvider: this})
-
+		this.treeView = vscode.window.createTreeView('jsonOutline', { treeDataProvider: this })
 	}
 
 
@@ -44,7 +39,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		return this.project.getChildren(node, this.projectOptions)
 	}
 	getParent(node: tsa.Node): tsa.Node {
-		return node.getParent()||this.project.currentSourceFile
+		return node.getParent() || this.project.currentSourceFile
 	}
 
 
@@ -121,8 +116,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 	private onTextEditorSelectionChanged(event) {
 		const node = this.project.getNodeInSelection(this.editor.selection)
-		if(node){
-			this.treeView.reveal(node, {select: false}) // TODO: select: true or false ? - configurable ? 
+		if (node) {
+			this.treeView.reveal(node, { select: true }) // TODO: select: true or false ? - configurable ? 
 		}
 	}
 
