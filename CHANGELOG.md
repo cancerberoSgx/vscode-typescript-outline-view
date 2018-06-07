@@ -1,7 +1,7 @@
 # Change Log
-All notable changes to the "typescript-outline-view" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-- Initial release
+## 0.0.1
+- Initial contrib - working with simple-ast tree view - based on vscode extension example tree-view
+- two modes getChildren and forEAchChildren
+- obtain list of refactors applicable to node on right-click
+- vscode just released a outline view - so the priorities changed - this should be more like a AST viewer with possibility to trigger refactors and move things around drag&drop and an option to remove a node. 
