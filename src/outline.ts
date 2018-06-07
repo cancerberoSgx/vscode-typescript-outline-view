@@ -16,6 +16,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		showSourceFiles: false
 	}
 	treeView: vscode.TreeView<tsa.Node>
+	
 	constructor(private context: vscode.ExtensionContext) {
 		vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
 		vscode.workspace.onDidChangeTextDocument(e => this.onDocumentChanged(e));
@@ -23,11 +24,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		vscode.workspace.onDidChangeConfiguration(() => {
 			this.autoRefresh = vscode.workspace.getConfiguration('jsonOutline').get('autorefresh');
 		});
-		this.onActiveEditorChanged();
 		this.project = new ProjectManager()
-		vscode.window.onDidChangeTextEditorSelection(e => this.onTextEditorSelectionChanged(e))
+		vscode.window.onDidChangeTextEditorSelection(e => this.onTextEditorSelectionChanged())
 
 		this.treeView = vscode.window.createTreeView('jsonOutline', { treeDataProvider: this })
+		this.onActiveEditorChanged();
 	}
 
 
@@ -38,6 +39,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		await this.project.refresh()
 		return this.project.getChildren(node, this.projectOptions)
 	}
+
 	getParent(node: tsa.Node): tsa.Node {
 		return node.getParent() || this.project.currentSourceFile
 	}
@@ -64,16 +66,23 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	}
 
 	async rename(node: tsa.Node) {
-		const value = await vscode.window.showInputBox({ placeHolder: 'Enter the new name' })
+		if(!(node as any).rename){
+			return await vscode.window.showInformationMessage('Sorry, this node doesn\'t support rename operation.')
+		}
+		const value = await vscode.window.showInputBox({ placeHolder: 'Enter new name' })
 		if (value) {
-			this.editor.edit(editBuilder => {
+			(node as any).rename(value)
+			this.project.currentSourceFile.saveSync()
+			await this.refresh()
+
+			// this.editor.edit(editBuilder => {
 				// const range = new vscode.Range(this.editor.document.positionAt(propertyNode.node), this.editor.document.positionAt(propertyNode.node + propertyNode.length));
 				// editBuilder.replace(range, `"${value}"`);
 				// setTimeout(() => {
 				// 	this.parseTree();
 				// 	this.refresh(node);
 				// }, 100)
-			});
+			// });
 		}
 	}
 
@@ -81,6 +90,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		const refactors = await this.project.getRefactorsFor(node)
 		if (refactors && refactors.length) {
 			const selected = await vscode.window.showQuickPick(refactors, { canPickMany: false })
+			console.log('TODO: selected: '+selected);//TODO: implement this - how to trigger refactor programmatically ? 
+			
 		}
 	}
 
@@ -98,6 +109,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 				if (enabled) {
 					this.editor = vscode.window.activeTextEditor;
 					this.refresh();
+					this.onTextEditorSelectionChanged()
 				}
 			}
 		} else {
@@ -114,7 +126,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		}
 	}
 
-	private onTextEditorSelectionChanged(event) {
+	private async onTextEditorSelectionChanged() {
+		await this.project.refresh()
 		const node = this.project.getNodeInSelection(this.editor.selection)
 		if (node) {
 			this.treeView.reveal(node, { select: true }) // TODO: select: true or false ? - configurable ? 
@@ -173,7 +186,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	}
 
 	private getLabel(node: tsa.Node): string {
-		return node.getKindName() // TODO: decide labels
+		const name = (node as any).getName ? (node as any).getName() + ' ' : ''
+		return `${name}${(name ? '(' : '') + node.getKindName() + (name ? ')' : '')}` // TODO: decide labels
 	}
 
 

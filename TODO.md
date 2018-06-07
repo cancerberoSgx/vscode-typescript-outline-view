@@ -1,5 +1,11 @@
 # TODO
 
+# issues
+
+ * when files are changed like in "rename" - tsa.sourcefiles gets outdated - une way of solving this is calling
+refresh from filesystem(). also the general refresh button should perform updatefromfs for each sourcefile and
+also for each open editor dirty update sourcefile content from from there. 
+
 # project
 
  * change name of the project to something like vscode-ts-js-ast-toolkit - the word AST must be there cause now vscode has a outline for ts and js

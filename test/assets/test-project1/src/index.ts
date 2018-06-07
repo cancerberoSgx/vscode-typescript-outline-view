@@ -7,9 +7,12 @@ class Fruit {
 }
 
 interface Place {
-
+  calculateFruitCount():number
 }
 
+class Uruguay implements Place {
+
+}
 
 function foo() {
 
