@@ -28,7 +28,7 @@ export class ProjectManager {
     }
     if (!this.project) {
       const files = await vscode.workspace.findFiles('**/tsconfig.json')
-      const tsconfig = files[0].fsPath//TODO: check null or more than one
+      const tsconfig = files[0].fsPath//TODO: check null or more than one and decide what to do
       this.lastFileName = vscode.window.activeTextEditor.document.fileName
       try {
         this._project = new Project({ tsConfigFilePath: tsconfig })

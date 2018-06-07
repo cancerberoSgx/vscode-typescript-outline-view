@@ -14,4 +14,6 @@
 
 ## 0.0.2
 
- * 
+ * add addChild and removeNode actions (not implemented yet)
+
+## 0.0.3

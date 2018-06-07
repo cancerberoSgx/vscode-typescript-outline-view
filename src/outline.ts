@@ -7,7 +7,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	private _onDidChangeTreeData: vscode.EventEmitter<tsa.Node | null> = new vscode.EventEmitter<tsa.Node | null>();
 	readonly onDidChangeTreeData: vscode.Event<tsa.Node | null> = this._onDidChangeTreeData.event;
 
-	// private currentMode: 'getChildren' | 'forEachChildren' = 'forEachChildren'
 	private editor: vscode.TextEditor;
 	private autoRefresh: boolean = true;
 	private project: ProjectManager;
