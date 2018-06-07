@@ -8,3 +8,10 @@
  * vscode just released a outline view - so the priorities changed - this should be more like a AST viewer with possibility to trigger refactors and move things around drag&drop and an option to remove a node. 
  * revealRange on tree node select
  * refactors on right click
+ * name change typescript-ast-outline
+ * rename works
+ * fix updating project when file change and tree - source binding issues
+
+## 0.0.2
+
+ * 
