@@ -66,23 +66,16 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	}
 
 	async rename(node: tsa.Node) {
+		//TODO: delegate in projectmanager : this.project.nodeCanBeRenamed(node) and 
 		if(!(node as any).rename){
 			return await vscode.window.showInformationMessage('Sorry, this node doesn\'t support rename operation.')
 		}
 		const value = await vscode.window.showInputBox({ placeHolder: 'Enter new name' })
 		if (value) {
+			//TODO: delegate in projectmanager : this.project.rename(node)
 			(node as any).rename(value)
 			this.project.currentSourceFile.saveSync()
 			await this.refresh()
-
-			// this.editor.edit(editBuilder => {
-				// const range = new vscode.Range(this.editor.document.positionAt(propertyNode.node), this.editor.document.positionAt(propertyNode.node + propertyNode.length));
-				// editBuilder.replace(range, `"${value}"`);
-				// setTimeout(() => {
-				// 	this.parseTree();
-				// 	this.refresh(node);
-				// }, 100)
-			// });
 		}
 	}
 
@@ -90,7 +83,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		const refactors = await this.project.getRefactorsFor(node)
 		if (refactors && refactors.length) {
 			const selected = await vscode.window.showQuickPick(refactors, { canPickMany: false })
-			console.log('TODO: selected: '+selected);//TODO: implement this - how to trigger refactor programmatically ? 
+			console.log('TODO: selected: '+selected);//TODO: implement this - how to trigger refactor programmatically ? - delegate in project manager - this.project.applyRefactor(selected)
 			
 		}
 	}
@@ -186,8 +179,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	}
 
 	private getLabel(node: tsa.Node): string {
-		const name = (node as any).getName ? (node as any).getName() + ' ' : ''
-		return `${name}${(name ? '(' : '') + node.getKindName() + (name ? ')' : '')}` // TODO: decide labels
+		const name = (node as any).getName ? (node as any).getName() + ' ' : '' //TODO: delegate in projectmanager
+		return `${name}${(name ? '(' : '') + node.getKindName() + (name ? ')' : '')}`
 	}
 
 

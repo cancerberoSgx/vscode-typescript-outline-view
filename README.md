@@ -1,3 +1,12 @@
+# What 
+
+vscode extension that adds a view in explorer panel that shows the Abstract Syntax Tree of active editor
+(TypeScript or JavaScript). Live updates and bindings from source code to the AST view. User can manipulate
+the ast nodes visually (removing, creating, moving, applying refactors, renaming, etc). Supports filtering and
+different AST view modes
+
+## Currently
+
 this is a research project that tries to investigate how well ts-simple-ast works in conjunction with vscode -
 and particularly its tree-view 
 
