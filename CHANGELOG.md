@@ -17,3 +17,7 @@
  * add addChild and removeNode actions (not implemented yet)
 
 ## 0.0.3
+
+ * marketing - screencast - marketplace
+
+## 0.0.4
