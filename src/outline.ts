@@ -74,7 +74,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		if (value) {
 			//TODO: delegate in projectmanager : this.project.rename(node)
 			(node as any).rename(value)
-			this.project.currentSourceFile.saveSync()
+			this.project.project.save()
 			await this.refresh()
 		}
 	}
@@ -83,11 +83,19 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		const refactors = await this.project.getRefactorsFor(node)
 		if (refactors && refactors.length) {
 			const selected = await vscode.window.showQuickPick(refactors, { canPickMany: false })
+			vscode.window.showErrorMessage('Operation not implemented yet, sorry - WIP')
 			console.log('TODO: selected: '+selected);//TODO: implement this - how to trigger refactor programmatically ? - delegate in project manager - this.project.applyRefactor(selected)
-			
 		}
 	}
 
+
+	async removeNode(node: tsa.Node) {
+		vscode.window.showErrorMessage('Operation not implemented yet, sorry - WIP')
+	}
+
+	async addChild(node: tsa.Node) {
+		vscode.window.showErrorMessage('Operation not implemented yet, sorry - WIP')
+	}
 
 
 

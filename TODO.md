@@ -49,6 +49,12 @@ also for each open editor dirty update sourcefile content from from there.
  * remove : if tsa.Node.remove user can right click node and remove or by pressing supr. https://dsherret.github.io/ts-simple-ast/manipulation/formatting 
  * formatting action usign : https://dsherret.github.io/ts-simple-ast/manipulation/formatting - get the
    preferences from vscode settings
+ * addChild: one way could be : open a new temporary .ts file to the user with something like this: export
+   const childNode: VariableDeclarationStructure = {} - it will have errors (cause of missing structure
+   properties that user will have to fill manually) - when user saves this file or exec a command we can
+   eval/import the structure and add it to the ast. We could ask which structure he wants to create
+   showQuickPick where he select most relevant kind of nodes.
+
 
 # nice to have
 

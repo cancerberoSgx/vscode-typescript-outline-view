@@ -1,4 +1,4 @@
-class Fruit {
+export class Fruit {
   color: string
 
   drop(to: Place){
@@ -6,15 +6,18 @@ class Fruit {
   }
 }
 
-interface Place {
+export interface Place {
   calculateFruitCount():number
 }
 
-class Uruguay implements Place {
+export class Uruguay implements Place {
+  calculateFruitCount(): number {
+    throw new Error("Method not implemented.");
+  }
 
 }
 
-function foo() {
+export function foo() {
 
 
 

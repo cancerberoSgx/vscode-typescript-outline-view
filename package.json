@@ -80,9 +80,18 @@
 					"dark": "resources/dark/refresh.svg"
 				}
 			},
+
 			{
 				"command": "jsonOutline.renameNode",
 				"title": "Rename"
+			},
+			{
+				"command": "jsonOutline.removeNode",
+				"title": "Remove"
+			},
+			{
+				"command": "jsonOutline.addChild",
+				"title": "Add Child"
 			},
 			{
 				"command": "jsonOutline.refactorNode",
@@ -115,7 +124,16 @@
 					"command": "jsonOutline.refreshNode",
 					"when": "view == jsonOutline",
 					"group": "inline"
+				},
+				{
+					"command": "jsonOutline.removeNode",
+					"when": "view == jsonOutline"
+				},
+				{
+					"command": "jsonOutline.addChild",
+					"when": "view == jsonOutline"
 				}
+
 			]
 		},
 		"configuration": [
