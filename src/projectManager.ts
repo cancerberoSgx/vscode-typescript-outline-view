@@ -8,6 +8,9 @@ export interface ProjectManagerOptions {
 
 
 export class ProjectManager {
+	getNodeInSelection(selection: vscode.Selection): tsa.Node|undefined {
+    return this.currentSourceFile.getDescendantAtPos(vscode.window.activeTextEditor.document.offsetAt(selection.anchor))
+	}
 
   private _project: tsa.Project;
   private _currentSourceFile: tsa.SourceFile;

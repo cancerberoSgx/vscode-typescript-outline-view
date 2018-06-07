@@ -15,8 +15,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		mode: 'forEachChildren',
 		showSourceFiles: false
 	}
-
+	treeView: vscode.TreeView<tsa.Node>
 	constructor(private context: vscode.ExtensionContext) {
+
+
+
 		vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
 		vscode.workspace.onDidChangeTextDocument(e => this.onDocumentChanged(e));
 		this.autoRefresh = vscode.workspace.getConfiguration('jsonOutline').get('autorefresh');
@@ -25,7 +28,23 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		});
 		this.onActiveEditorChanged();
 		this.project = new ProjectManager()
-		vscode.window.onDidChangeTextEditorSelection(e => this.onTextEditorSelectionChanged())
+		vscode.window.onDidChangeTextEditorSelection(e => this.onTextEditorSelectionChanged(e))
+
+
+	this.treeView = vscode.window.createTreeView('jsonOutline', {treeDataProvider: this})
+
+	}
+
+
+
+	// TREEVIEW STUFF
+
+	async getChildren(node?: tsa.Node): Promise<tsa.Node[]> {
+		await this.project.refresh()
+		return this.project.getChildren(node, this.projectOptions)
+	}
+	getParent(node: tsa.Node): tsa.Node {
+		return node.getParent()||this.project.currentSourceFile
 	}
 
 
@@ -50,8 +69,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	}
 
 	async rename(node: tsa.Node) {
-		// const selected = await vscode.window.showQuickPick(this.project.getRefactorsFor(node), { canPickMany: false })
-		// console.log(selected)
 		const value = await vscode.window.showInputBox({ placeHolder: 'Enter the new name' })
 		if (value) {
 			this.editor.edit(editBuilder => {
@@ -69,7 +86,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		const refactors = await this.project.getRefactorsFor(node)
 		if (refactors && refactors.length) {
 			const selected = await vscode.window.showQuickPick(refactors, { canPickMany: false })
-			console.log(selected)
 		}
 	}
 
@@ -103,10 +119,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		}
 	}
 
-	private onTextEditorSelectionChanged() {
-		//TODO: search in project which node is the minimal child containing this.editor.selection.anchor or
-		//this.editor.selection - expand and scroll the treeview there
-		console.log('onDidChangeTextEditorSelection', JSON.stringify(this.editor.selection.anchor))
+	private onTextEditorSelectionChanged(event) {
+		const node = this.project.getNodeInSelection(this.editor.selection)
+		if(node){
+			this.treeView.reveal(node, {select: false}) // TODO: select: true or false ? - configurable ? 
+		}
 	}
 
 
@@ -162,11 +179,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 	private getLabel(node: tsa.Node): string {
 		return node.getKindName() // TODO: decide labels
-	}
-
-	async getChildren(node?: tsa.Node): Promise<tsa.Node[]> {
-		await this.project.refresh()
-		return this.project.getChildren(node, this.projectOptions)
 	}
 
 
