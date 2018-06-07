@@ -9,3 +9,54 @@ class Fruit {
 interface Place {
 
 }
+
+
+function foo() {
+
+
+
+
+
+
+
+
+
+var a = 9
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var b = 7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  return 1
+}

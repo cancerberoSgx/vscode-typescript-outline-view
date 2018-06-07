@@ -2,16 +2,17 @@ import * as path from 'path';
 import Project, * as tsa from 'ts-simple-ast';
 import * as vscode from 'vscode';
 import { existsSync } from 'fs';
+import { ProjectManager } from './projectManager';
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 
-	lastFileName: string;
 	private _onDidChangeTreeData: vscode.EventEmitter<tsa.Node | null> = new vscode.EventEmitter<tsa.Node | null>();
 	readonly onDidChangeTreeData: vscode.Event<tsa.Node | null> = this._onDidChangeTreeData.event;
 
 	private text: string;
 	private editor: vscode.TextEditor;
 	private autoRefresh: boolean = true;
+	private project: ProjectManager;
 
 	constructor(private context: vscode.ExtensionContext) {
 		vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
@@ -22,6 +23,9 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 			this.autoRefresh = vscode.workspace.getConfiguration('jsonOutline').get('autorefresh');
 		});
 		this.onActiveEditorChanged();
+		this.project = new ProjectManager()
+		vscode.window.onDidChangeTextEditorVisibleRanges(e => console.log('onDidChangeTextEditorVisibleRanges', JSON.stringify(e)))
+		
 	}
 
 	async refresh(node?: tsa.Node) {
@@ -37,6 +41,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	async changeMode() {
 		this.currentMode = this.currentMode === 'getChildren' ? 'forEachChildren' : 'getChildren'
 		await this.parseTree();
+		await this.refresh()
 	}
 
 	private onActiveEditorChanged(): void {
@@ -57,67 +62,23 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		if (this.autoRefresh && changeEvent.document.uri.toString() === this.editor.document.uri.toString()) {
 			for (const change of changeEvent.contentChanges) {
 				await this.parseTree();
-				this._onDidChangeTreeData.fire(this.currentSourceFile || null); // TODO: refined
+				this._onDidChangeTreeData.fire(this.project.currentSourceFile || null); // TODO: refined
 			}
 		}
 	}
 
 	private async parseTree(): Promise<void> {
 		this.editor = vscode.window.activeTextEditor;
-		return this.getCurrentSourceFile()
-	}
-
-	private project: tsa.Project
-	private currentSourceFile: tsa.SourceFile
-
-	private async getCurrentSourceFile() {
-		if (!vscode.window.activeTextEditor) {
-			return
-		}
-		if (!this.project) {
-			const files = await vscode.workspace.findFiles('**/tsconfig.json')
-			const tsconfig = files[0].fsPath//TODO: check null or more than one		
-			// console.log(vscode.window.activeTextEditor.document.fileName, tsconfig)
-			this.lastFileName = vscode.window.activeTextEditor.document.fileName
-			try {
-				this.project = new Project({ tsConfigFilePath: tsconfig })
-			} catch (error) {
-				debugger //TODO: log
-			}
-		}
-		if (!this.currentSourceFile || this.lastFileName !== vscode.window.activeTextEditor.document.fileName) {
-			this.lastFileName = vscode.window.activeTextEditor.document.fileName
-			try {
-				this.currentSourceFile= this.project.getSourceFile(this.lastFileName)
-				if (!this.currentSourceFile) {// not in tsa project (new file)
-					this.currentSourceFile = this.project.createSourceFile(this.lastFileName, vscode.window.activeTextEditor.document.getText())
-				} else if (vscode.window.activeTextEditor.document.isDirty){
-					this.currentSourceFile.replaceWithText(vscode.window.activeTextEditor.document.getText())
-				}
-			} catch (error) {
-				debugger //TODO: log
-			}	
-		}
-		return Promise.resolve()
+		return await this.project.refresh()
 	}
 
 
 	async getChildren(node?: tsa.Node): Promise<tsa.Node[]> {
-		await this.getCurrentSourceFile()
-		const target = (node || this.currentSourceFile)
-		// console.log('getChildren length:' + target.getChildren().length);
-		let children: tsa.Node[]
-		if (this.currentMode === 'getChildren') {
-			children = target.getChildren()
-		}
-		else {
-			children = []
-			target.forEachChild(c => children.push(c))
-		}
-		return Promise.resolve(children)
+		await this.project.refresh()
+		return  this.project.getChildren(node, {mode:this.currentMode })
 	}
 
-	counter = 0
+	// counter = 0
 	getTreeItem(node: tsa.Node): vscode.TreeItem {
 		let hasChildren = node.getChildren() && node.getChildren().length
 		let treeItem: vscode.TreeItem = new vscode.TreeItem(this.getLabel(node),
@@ -130,17 +91,23 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		);
 		treeItem.command = {
 			command: 'extension.openJsonSelection',
-			title: '',
-			arguments: [node]
+			title: 'treeitem command title',
+			tooltip: 'treeitem command tooltip',
+			arguments: [node],
 		};
 		treeItem.iconPath = this.getIcon(node);
+		treeItem.tooltip = (node as any).getName ? (node as any).getName() : node.getText().substring(0, Math.min(node.getText().length, 40))
+		treeItem.contextValue = node.getKindName()
 		return treeItem
 	}
 
 
 
 	select(node: tsa.Node) {
-		this.editor.selection = new vscode.Selection(vscode.window.activeTextEditor.document.positionAt(node.getFullStart()), vscode.window.activeTextEditor.document.positionAt(node.getEnd()));
+		const start = this.editor.document.positionAt(node.getFullStart())
+		const end = this.editor.document.positionAt(node.getEnd())
+		this.editor.selection = new vscode.Selection(start, end);
+		this.editor.revealRange(new vscode.Range(start, end))
 	}
 
 
@@ -171,20 +138,9 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	}
 
 
-	private async getRefactorsFor(node: tsa.Node) {
-		const refactors = this.project.getLanguageService().compilerObject.getApplicableRefactors(this.currentSourceFile.getFilePath(), { pos: node.getPos(), end: node.getEnd() }, {})
-		const applicableRefactorsMap = {}
-		refactors.forEach(r => {
-			r.actions.forEach(a => {
-				const name = r.name + ' - ' + a.description
-				applicableRefactorsMap[name] = { refactor: r, action: a }
-			})
-		})
-		return Object.keys(applicableRefactorsMap)
-	}
 
 	async rename(node: tsa.Node) {
-		const selected = await vscode.window.showQuickPick(this.getRefactorsFor(node), { canPickMany: false })
+		const selected = await vscode.window.showQuickPick(this.project.getRefactorsFor(node), { canPickMany: false })
 		console.log(selected)
 		const value = await vscode.window.showInputBox({ placeHolder: 'Enter the new label' })
 		// .then(value => {

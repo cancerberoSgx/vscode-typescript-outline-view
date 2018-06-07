@@ -23,6 +23,11 @@
  * expand all and collapse all
  * implement autorefresh by settings
 
+# editor
+
+ * when cursor changes in editor (code) the tree view should follow expanding and scrolling to that node. Make it configurable because of performance
+ 
+
 ## Testing 
 
  * test on very big files. and very big projects
