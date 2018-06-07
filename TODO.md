@@ -20,6 +20,8 @@
 
  * a third view that show all source files as root files ? (so i can move nodes between files ?)
  * filters ? how to put input text in the view ? filter by kindname, by identifier, etc. indexing ? 
+ * expand all and collapse all
+ * implement autorefresh by settings
 
 ## Testing 
 
@@ -31,7 +33,7 @@
 # Refactor
 
  * move drag&drop node
- * change order or childs (dragdrop)
+ * change order or children (dragdrop)
  * show refactor suggestions (like proactive's) by right clicking node - call languageservice getRefactorList() for that node using tsa.
  * rename node
  * remove : if tsa.Node.remove user can right click node and remove or by pressing supr. 

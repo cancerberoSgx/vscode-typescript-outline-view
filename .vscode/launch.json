@@ -12,7 +12,7 @@
             "runtimeExecutable": "${execPath}",
             "args": [
                 "--extensionDevelopmentPath=${workspaceRoot}",
-                "/home/sg/git/yamat"
+                "${workspaceFolder}/test/assets/test-project1"
             ],
             "stopOnEntry": false,
             "sourceMaps": true,

@@ -1,6 +1,7 @@
 import * as path from 'path';
 import Project, * as tsa from 'ts-simple-ast';
 import * as vscode from 'vscode';
+import { existsSync } from 'fs';
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 
@@ -69,7 +70,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 	private project: tsa.Project
 	private currentSourceFile: tsa.SourceFile
 
-	private async getCurrentSourceFile(): Promise<void> {
+	private async getCurrentSourceFile() {
+		if (!vscode.window.activeTextEditor) {
+			return
+		}
 		if (!this.project) {
 			const files = await vscode.workspace.findFiles('**/tsconfig.json')
 			const tsconfig = files[0].fsPath//TODO: check null or more than one		
@@ -84,10 +88,15 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 		if (!this.currentSourceFile || this.lastFileName !== vscode.window.activeTextEditor.document.fileName) {
 			this.lastFileName = vscode.window.activeTextEditor.document.fileName
 			try {
-				this.currentSourceFile = this.project.getSourceFileOrThrow(this.lastFileName)
+				this.currentSourceFile= this.project.getSourceFile(this.lastFileName)
+				if (!this.currentSourceFile) {// not in tsa project (new file)
+					this.currentSourceFile = this.project.createSourceFile(this.lastFileName, vscode.window.activeTextEditor.document.getText())
+				} else if (vscode.window.activeTextEditor.document.isDirty){
+					this.currentSourceFile.replaceWithText(vscode.window.activeTextEditor.document.getText())
+				}
 			} catch (error) {
 				debugger //TODO: log
-			}
+			}	
 		}
 		return Promise.resolve()
 	}
@@ -163,20 +172,22 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 
 	private async getRefactorsFor(node: tsa.Node) {
-		const refactors = this.project.getLanguageService().compilerObject.getApplicableRefactors(this.currentSourceFile.getFilePath(), {pos: node.getPos(), end: node.getEnd()}, {})
+		const refactors = this.project.getLanguageService().compilerObject.getApplicableRefactors(this.currentSourceFile.getFilePath(), { pos: node.getPos(), end: node.getEnd() }, {})
 		const applicableRefactorsMap = {}
-		refactors.forEach(r=>{r.actions.forEach(a=>{
-			const name = r.name + ' - ' + a.description
-			applicableRefactorsMap[name] = {refactor: r, action: a}
-		})})
+		refactors.forEach(r => {
+			r.actions.forEach(a => {
+				const name = r.name + ' - ' + a.description
+				applicableRefactorsMap[name] = { refactor: r, action: a }
+			})
+		})
 		return Object.keys(applicableRefactorsMap)
 	}
 
 	async rename(node: tsa.Node) {
-		const selected = await vscode.window.showQuickPick(this.getRefactorsFor(node), {canPickMany: false})
+		const selected = await vscode.window.showQuickPick(this.getRefactorsFor(node), { canPickMany: false })
 		console.log(selected)
 		const value = await vscode.window.showInputBox({ placeHolder: 'Enter the new label' })
-			// .then(value => {
+		// .then(value => {
 		if (value) {
 			this.editor.edit(editBuilder => {
 				// const path = json.getLocation(this.text, node).path
@@ -192,7 +203,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<tsa.Node> {
 				// }, 100)
 			});
 		}
-			// });
+		// });
 	}
 
 
