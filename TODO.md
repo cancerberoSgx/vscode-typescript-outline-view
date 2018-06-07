@@ -61,3 +61,5 @@ also for each open editor dirty update sourcefile content from from there.
 
  * show refactor suggestions (like proactive's) by right clicking node - call languageservice getRefactorList() for that node using tsa.
  * two modes getChildren and forEAchChildren
+
+	<!-- "enableProposedApi": true, -->

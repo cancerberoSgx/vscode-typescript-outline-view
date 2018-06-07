@@ -15,3 +15,13 @@ objectives - mostly to be a ast representation - configurable, filtrable and man
 refactors, rename, remove, formatting on individual ast nodes.
 
 on going project very new -WIP
+
+# TODO
+
+(https://cancerberosgx.visualstudio.com/_git/typescript-ast-outline?path=%2FTODO.md&version=GBmaster)[TODO]
+
+
+
+# CHANGELOG
+
+(https://cancerberosgx.visualstudio.com/_git/typescript-ast-outline?path=%2FCHANGELOG.md&version=GBmaster)[CHANGELOG]
