@@ -9,7 +9,7 @@
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"main": "./out/src/extension",
-
+	"repository": "https://cancerberosgx.visualstudio.com/typescript-ast-outline",
 
 	"devDependencies": {
 		"typescript": "^2.9.1",
@@ -32,9 +32,8 @@
 	"engines": {
 		"vscode": "^1.23.0"
 	},
-	"displayName": "typescript-outline-view",
+	"displayName": "TypeScript AST Outline",
 	
-	"enableProposedApi": true,
 	"categories": [
 		"Other", "Programming Languages"
 	],
