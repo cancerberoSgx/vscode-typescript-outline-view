@@ -84,6 +84,10 @@
 			{
 				"command": "jsonOutline.renameNode",
 				"title": "Rename"
+			},
+			{
+				"command": "jsonOutline.refactorNode",
+				"title": "Refactor"
 			}
 		],
 		"menus": {
@@ -102,6 +106,10 @@
 			"view/item/context": [
 				{
 					"command": "jsonOutline.renameNode",
+					"when": "view == jsonOutline"
+				},
+				{
+					"command": "jsonOutline.refactorNode",
 					"when": "view == jsonOutline"
 				},
 				{

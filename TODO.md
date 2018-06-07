@@ -39,13 +39,19 @@
 
  * move drag&drop node
  * change order or children (dragdrop)
- * show refactor suggestions (like proactive's) by right clicking node - call languageservice getRefactorList() for that node using tsa.
  * rename node
- * remove : if tsa.Node.remove user can right click node and remove or by pressing supr. 
+ * remove : if tsa.Node.remove user can right click node and remove or by pressing supr. https://dsherret.github.io/ts-simple-ast/manipulation/formatting 
+ * formatting action usign : https://dsherret.github.io/ts-simple-ast/manipulation/formatting - get the
+   preferences from vscode settings
 
+# nice to have
+
+ * mark tree nodes which are contained by a error diagnostic
+ * keybindings dor activating context menu or individual actions like remove - format, rename, refactor, etc
 
 
 
 # DONEs
 
+ * show refactor suggestions (like proactive's) by right clicking node - call languageservice getRefactorList() for that node using tsa.
  * two modes getChildren and forEAchChildren

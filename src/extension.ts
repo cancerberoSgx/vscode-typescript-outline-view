@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { JsonOutlineProvider } from './outline'
 
 export function activate(context: vscode.ExtensionContext) {
-	const rootPath = vscode.workspace.rootPath;
+	// const rootPath = vscode.workspace.rootPath;
 
 	const jsonOutlineProvider = new JsonOutlineProvider(context);
 
@@ -12,6 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('jsonOutline.changeMode', () => jsonOutlineProvider.changeMode());
 	vscode.commands.registerCommand('jsonOutline.refreshNode', offset => jsonOutlineProvider.refresh(offset));
 	vscode.commands.registerCommand('jsonOutline.renameNode', offset => jsonOutlineProvider.rename(offset));
+	vscode.commands.registerCommand('jsonOutline.refactorNode', offset => jsonOutlineProvider.refactorNode(offset));
 	vscode.commands.registerCommand('extension.openJsonSelection', range => jsonOutlineProvider.select(range));
 
 }
