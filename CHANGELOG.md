@@ -21,3 +21,7 @@
  * marketing - screencast - marketplace
 
 ## 0.0.4
+
+ * removed all json outline related ids  
+ * strict mode enabled
+ * created astUtil with node-ast static utils
