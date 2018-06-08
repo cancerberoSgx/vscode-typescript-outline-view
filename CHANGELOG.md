@@ -9,7 +9,7 @@
  * revealRange on tree node select
  * refactors on right click
  * name change typescript-ast-outline
- * rename works
+ * rename action
  * fix updating project when file change and tree - source binding issues
 
 ## 0.0.2
@@ -25,3 +25,4 @@
  * removed all json outline related ids  
  * strict mode enabled
  * created astUtil with node-ast static utils
+ * remove action

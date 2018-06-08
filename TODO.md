@@ -1,9 +1,9 @@
 # TODO
 
 # issues
-
+ * current screencast is too long, hard to follow and too big
  * when files are changed like in "rename" - tsa.sourcefiles gets outdated - une way of solving this is calling
-refresh from filesystem(). also the general refresh button should perform updatefromfs for each sourcefile and
+refresh from filesystem(). also the general refresh button should perform updatefromfs() for each sourcefile and
 also for each open editor dirty update sourcefile content from from there. 
 
 # project
@@ -28,6 +28,7 @@ also for each open editor dirty update sourcefile content from from there.
  * filters ? how to put input text in the view ? filter by kindname, by identifier, etc. indexing ? 
  * expand all and collapse all
  * implement autorefresh by settings
+ * refresh general button should be "toggle auto refresh" and the action should be - refresh and toggle auto-refresh
 
 # editor
 
@@ -45,8 +46,6 @@ also for each open editor dirty update sourcefile content from from there.
 
  * move drag&drop node
  * change order or children (dragdrop)
- * rename node
- * remove : if tsa.Node.remove user can right click node and remove or by pressing supr. https://dsherret.github.io/ts-simple-ast/manipulation/formatting 
  * formatting action usign : https://dsherret.github.io/ts-simple-ast/manipulation/formatting - get the
    preferences from vscode settings
  * addChild: one way could be : open a new temporary .ts file to the user with something like this: export
@@ -54,6 +53,9 @@ also for each open editor dirty update sourcefile content from from there.
    properties that user will have to fill manually) - when user saves this file or exec a command we can
    eval/import the structure and add it to the ast. We could ask which structure he wants to create
    showQuickPick where he select most relevant kind of nodes.
+ * instead of offering all refactors and then tell the user rename/remove cannot be done - use context in
+   commands , maintain a list of node kinds that support each action and dont offer an action on a node that
+   doesnt support it.
 
 
 # nice to have
@@ -67,5 +69,6 @@ also for each open editor dirty update sourcefile content from from there.
 
  * show refactor suggestions (like proactive's) by right clicking node - call languageservice getRefactorList() for that node using tsa.
  * two modes getChildren and forEAchChildren
-
+ * remove : if tsa.Node.remove user can right click node and remove or by pressing supr. https://dsherret.github.io/ts-simple-ast/manipulation/formatting 
+ * rename node
 	<!-- "enableProposedApi": true, -->

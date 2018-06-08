@@ -3,8 +3,11 @@ import * as tsa from 'ts-simple-ast';
 import * as vscode from 'vscode';
 import { ProjectManager } from './ProjectManager';
 import { getNodeName, getChildren, getNodeInSelection } from './AstUtil';
-import { ProjectManagerOptions, Settings, readSettings } from './extension';
+import { State, Settings, readSettings } from './extension';
 
+/**
+ * this is the class with most reponsibilities in this extension
+ */
 export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 	
 	private _onDidChangeTreeData: vscode.EventEmitter<tsa.Node | null> = new vscode.EventEmitter<tsa.Node | null>();
@@ -12,12 +15,9 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 	private editor: vscode.TextEditor|undefined;
 	private project: ProjectManager;
-	private projectOptions: ProjectManagerOptions = {
-		mode: 'forEachChildren',
-		// showSourceFiles: false
-	}
+	private projectOptions: State 
 	private settings: Settings
-	treeView: vscode.TreeView<tsa.Node>
+	private treeView: vscode.TreeView<tsa.Node>
 	
 	constructor(private context: vscode.ExtensionContext) {
 		vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
@@ -33,6 +33,10 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 		this.onActiveEditorChanged();
 
 		this.editor = vscode.window.activeTextEditor;
+		this.projectOptions = {
+			autoRefresh: this.settings.autoRefresh,
+			mode: 'forEachChildren'
+		}
 	}
 
 	// TREEVIEW STUFF
@@ -50,22 +54,19 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 	//ACTIONS
 
+	private nodeDontSupportActionMessage = (actionName:string)=>`Sorry, this node doesn\'t support ${actionName}.\nPerhaps try with an ancestor instead ?`
 	async changeMode() {
 		this.projectOptions.mode = this.projectOptions.mode === 'getChildren' ? 'forEachChildren' : 'getChildren'
 		await this.refresh()
 	}
 
-
 	async rename(node: tsa.Node) {
-		//TODO: delegate in projectmanager : this.project.nodeCanBeRenamed(node) and 
-		if(!(node as any).rename){
-			return await vscode.window.showInformationMessage('Sorry, this node doesn\'t support rename operation.')
+		if(!this.project.nodeCanBeRenamed(node)){
+			return await vscode.window.showInformationMessage(this.nodeDontSupportActionMessage('rename'))
 		}
-		const value = await vscode.window.showInputBox({ placeHolder: 'Enter new name' })
-		if (value) {
-			//TODO: delegate in projectmanager : this.project.rename(node)
-			(node as any).rename(value)
-			this.project.save()
+		const newName = await vscode.window.showInputBox({ placeHolder: 'Enter new name' })
+		if (newName) {
+			this.project.renameNode(node, newName)
 			await this.refresh()
 		}
 	}
@@ -75,12 +76,16 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 		if (refactors && refactors.length) {
 			const selected = await vscode.window.showQuickPick(refactors, { canPickMany: false })
 			vscode.window.showErrorMessage('Operation not implemented yet, sorry - WIP')
-			console.log('TODO: selected: '+selected);//TODO: implement this - how to trigger refactor programmatically ? - delegate in project manager - this.project.applyRefactor(selected)
+			// console.log('TODO: selected: '+selected);//TODO: implement this - how to trigger refactor programmatically ? - delegate in project manager - this.project.applyRefactor(selected)
 		}
 	}
 
 	async removeNode(node: tsa.Node) {
-		vscode.window.showErrorMessage('Operation not implemented yet, sorry - WIP')
+		if(!this.project.nodeCanBeRemoved(node)){
+			return await vscode.window.showErrorMessage(this.nodeDontSupportActionMessage('rename'))
+		}
+		this.project.removeNode(node)
+		await this.refresh()
 	}
 
 	async addChild(node: tsa.Node) {
@@ -149,25 +154,20 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 
 	// TREE ITEM STUFF
+	// TODO: move this to AstTreeItem.ts
 
 	getTreeItem(node: tsa.Node): vscode.TreeItem {
-		let hasChildren = node.getChildren() && node.getChildren().length
-		let treeItem: vscode.TreeItem = new vscode.TreeItem(this.getLabel(node),
-			// TODO: perhaps some special nodes like decls could be expanded
-			// vscode.TreeItemCollapsibleState.Collapsed
-			hasChildren ?
-				// vscode.TreeItemCollapsibleState.Expanded : 
-				vscode.TreeItemCollapsibleState.Collapsed
-				: vscode.TreeItemCollapsibleState.None
-		);
+		// let hasChildren = node.getChildren() && node.getChildren().length
+		let treeItem: vscode.TreeItem = new vscode.TreeItem(this.getLabel(node), vscode.TreeItemCollapsibleState.Collapsed)
+			// TODO: perhaps some special nodes like decls could be expanded  vscode.TreeItemCollapsibleState.Collapsed , vscode.TreeItemCollapsibleState.Expanded :  hasChildren ?	vscode.TreeItemCollapsibleState.Collapsed	: node.TreeItemCollapsibleState.None
 		treeItem.command = {
 			command: 'extension.openJsonSelection',
 			title: 'treeitem command title',
 			tooltip: 'treeitem command tooltip',
 			arguments: [node],
 		};
-		treeItem.iconPath = this.getIcon(node);
-		treeItem.tooltip = (node as any).getName ? (node as any).getName() : node.getText().substring(0, Math.min(node.getText().length, 40))
+		treeItem.iconPath = this.getIcon(node)
+		treeItem.tooltip = node.getText().substring(0, Math.min(node.getText().length, 40))
 		treeItem.contextValue = node.getKindName()
 		return treeItem
 	}

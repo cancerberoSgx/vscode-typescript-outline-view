@@ -1,13 +1,13 @@
 import { Node, SyntaxKind, SourceFile } from "ts-simple-ast";
 import * as vscode from 'vscode';
-import { ProjectManagerOptions } from "./extension";
+import { State } from "./extension";
 
 export function getNodeName(node: Node): string | undefined {
   return (node as any).getName ? (node as any).getName() :
     node.getKind() === SyntaxKind.Identifier ? node.getText() : undefined
 }
 
-export async function getChildren(node: Node | undefined, options: ProjectManagerOptions, defaultTarget: Node) {
+export async function getChildren(node: Node | undefined, options: State, defaultTarget: Node) {
   const target = (node || defaultTarget)
   if (!target) {
     return []

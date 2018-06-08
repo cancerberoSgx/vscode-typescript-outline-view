@@ -4,8 +4,6 @@ import * as vscode from 'vscode';
 
 /** helpers for project-related tasks. Maintain a ts-simple-ast project object and keep it updated */
 export class ProjectManager {
-
-
   private _project: tsa.Project | undefined;
   private _currentSourceFile: tsa.SourceFile | undefined;
   private lastFileName: string | undefined;
@@ -59,17 +57,14 @@ export class ProjectManager {
     return Promise.resolve()
   }
 
-	save() {
-	  if (!this._project || !this._currentSourceFile) {
+	async save() {
+	  if (!this._project) {
       throw new Error('save() called before refresh()')
     }
-    this._project.save()
+    await this._project.save()
   }
   
   async getRefactorsFor(node: tsa.Node) {
-    if (!this._project || !this._currentSourceFile) {
-      throw new Error('getRefactorsFor() called before refresh()')
-    }
     if (node.getKind() === tsa.SyntaxKind.SourceFile) {
       return []
     }
@@ -94,4 +89,25 @@ export class ProjectManager {
     return Object.keys(applicableRefactorsMap)
   }
 
+  nodeCanBeRenamed(node: tsa.Node) {
+    return (node as any).rename
+  }
+
+  async renameNode(node: tsa.Node, name: string) {
+    if(this.nodeCanBeRenamed(node)){
+      (node as any).rename(name)
+      await this.project.save()
+    }
+  }
+
+	nodeCanBeRemoved(node: tsa.Node): any {
+    return (node as any).remove
+  }
+  
+	async removeNode(node: tsa.Node) {
+    if(this.nodeCanBeRemoved(node)){
+      (node as any).remove()
+      await this.project.save()
+    }
+	}
 }
