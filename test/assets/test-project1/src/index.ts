@@ -7,11 +7,17 @@ export class Fruit {
 }
 
 export interface Place {
-  calculateFruitCount():number
+  measure():number
 }
 
+
+
+
+
+
+
 export class Uruguay implements Place {
-  calculateFruitCount(): number {
+  measure(): number {
     throw new Error("Method not implemented.");
   }
 

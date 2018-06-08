@@ -43,7 +43,7 @@
 
 	
 	"activationEvents": [
-		"onView:jsonOutline",
+		"onView:tsAstOutline",
 		"onLanguage:typescript",
 		"onLanguage:javascript"
 	],
@@ -52,15 +52,15 @@
 		"views": {
 			"explorer": [
 				{
-					"id": "jsonOutline",
+					"id": "tsAstOutline",
 					"name": "TS Outline",
-					"when": "jsonOutlineEnabled"
+					"when": "tsAstOutlineEnabled"
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "jsonOutline.refresh",
+				"command": "tsAstOutline.refresh",
 				"title": "Refresh",
 				"icon": {
 					"light": "resources/light/refresh.svg",
@@ -68,7 +68,7 @@
 				}
 			},
 			{
-				"command": "jsonOutline.changeMode",
+				"command": "tsAstOutline.changeMode",
 				"title": "Change Mode",
 				"icon": {
 					"light": "resources/light/dependency.svg",
@@ -76,7 +76,7 @@
 				}
 			},
 			{
-				"command": "jsonOutline.refreshNode",
+				"command": "tsAstOutline.refreshNode",
 				"title": "Refresh",
 				"icon": {
 					"light": "resources/light/refresh.svg",
@@ -85,56 +85,56 @@
 			},
 
 			{
-				"command": "jsonOutline.renameNode",
+				"command": "tsAstOutline.renameNode",
 				"title": "Rename"
 			},
 			{
-				"command": "jsonOutline.removeNode",
+				"command": "tsAstOutline.removeNode",
 				"title": "Remove"
 			},
 			{
-				"command": "jsonOutline.addChild",
+				"command": "tsAstOutline.addChild",
 				"title": "Add Child"
 			},
 			{
-				"command": "jsonOutline.refactorNode",
+				"command": "tsAstOutline.refactorNode",
 				"title": "Refactor"
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
-					"command": "jsonOutline.refresh",
-					"when": "view == jsonOutline",
+					"command": "tsAstOutline.refresh",
+					"when": "view == tsAstOutline",
 					"group": "navigation"
 				},
 				{
-					"command": "jsonOutline.changeMode",
-					"when": "view == jsonOutline",
+					"command": "tsAstOutline.changeMode",
+					"when": "view == tsAstOutline",
 					"group": "navigation"
 				}
 			],
 			"view/item/context": [
 				{
-					"command": "jsonOutline.renameNode",
-					"when": "view == jsonOutline"
+					"command": "tsAstOutline.renameNode",
+					"when": "view == tsAstOutline"
 				},
 				{
-					"command": "jsonOutline.refactorNode",
-					"when": "view == jsonOutline"
+					"command": "tsAstOutline.refactorNode",
+					"when": "view == tsAstOutline"
 				},
 				{
-					"command": "jsonOutline.refreshNode",
-					"when": "view == jsonOutline",
+					"command": "tsAstOutline.refreshNode",
+					"when": "view == tsAstOutline",
 					"group": "inline"
 				},
 				{
-					"command": "jsonOutline.removeNode",
-					"when": "view == jsonOutline"
+					"command": "tsAstOutline.removeNode",
+					"when": "view == tsAstOutline"
 				},
 				{
-					"command": "jsonOutline.addChild",
-					"when": "view == jsonOutline"
+					"command": "tsAstOutline.addChild",
+					"when": "view == tsAstOutline"
 				}
 
 			]
@@ -143,9 +143,10 @@
 			{
 				"title": "TS Outline",
 				"properties": {
-					"jsonOutline.autorefresh": {
+					"tsAstOutline.autorefresh": {
 						"type": "boolean",
-						"default": false
+						"default": true, 
+						"description": "Should the AST Outline View and the Code Editor be synchronized whether the user scrolls, select, or make modifications in any of them? or should the user be responsible of refreshing th ast outline view manually ? "
 					}
 				}
 			}

@@ -1,3 +1,3 @@
 import {Uruguay} from './index'
 
-new Uruguay().calculateFruitCount()
+new Uruguay().measure()
