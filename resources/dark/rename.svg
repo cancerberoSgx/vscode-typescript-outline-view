@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 16 16"
+   id="svg10"
+   sodipodi:docname="rename2.svg"
+   inkscape:version="0.92.2 2405546, 2018-03-11"
+   width="16"
+   height="16">
+  <defs
+     id="defs14" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1028"
+     id="namedview12"
+     showgrid="false"
+     inkscape:zoom="5.3400704"
+     inkscape:cx="62.51143"
+     inkscape:cy="-0.1767802"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg10" />
+  <g
+     transform="matrix(0.21231006,0,0,0.21231006,-2.6847959,-204.62844)"
+     id="g4"
+     style="opacity:1;vector-effect:none;fill:#cccccc;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1">
+    <path
+       style="color:#000000;text-indent:0;text-transform:none;direction:ltr;baseline-shift:baseline;display:inline;overflow:visible;visibility:visible;vector-effect:none;fill:#cccccc;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;enable-background:accumulate"
+       d="M 61.8125,980.36656 A 2.0021966,2.0019958 0 1 0 62,984.36616 h 5 v 7.9992 H 16 a 2.0001993,1.9999987 0 0 0 -0.1875,0 2.0001993,1.9999987 0 0 0 -1.8125,1.9998 v 15.99844 a 2.0001993,1.9999987 0 0 0 2,1.9998 h 51 v 7.9992 h -5 a 2.0001993,1.9999987 0 0 0 -0.1875,0 2.0021966,2.0019958 0 1 0 0.1875,3.9996 h 14 a 2.0001993,1.9999987 0 1 0 0,-3.9996 h -5 v -7.9992 h 13 a 2.0001993,1.9999987 0 0 0 2,-1.9998 v -15.99844 a 2.0001993,1.9999987 0 0 0 -2,-1.9998 H 71 v -7.9992 h 5 a 2.0001993,1.9999987 0 1 0 0,-3.9996 H 62 a 2.0001993,1.9999987 0 0 0 -0.1875,0 z M 18,996.36496 h 49 v 11.99884 H 18 Z m 53,0 h 11 v 11.99884 H 71 Z"
+       marker="none"
+       visibility="visible"
+       display="inline"
+       overflow="visible"
+       id="path2"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

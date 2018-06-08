@@ -3,9 +3,8 @@ import { AstTreeDataProvider } from './AstTreeDataProvider'
 
 export function activate(context: vscode.ExtensionContext) {
 	const tsAstOutlineProvider = new AstTreeDataProvider(context);
-
 	vscode.commands.registerCommand('tsAstOutline.refresh', () => tsAstOutlineProvider.refresh());
-	vscode.commands.registerCommand('tsAstOutline.changeMode', () => tsAstOutlineProvider.changeMode());
+	vscode.commands.registerCommand('tsAstOutline.toggleASTMode', () => tsAstOutlineProvider.toggleASTMode());
 	vscode.commands.registerCommand('tsAstOutline.refreshNode', node => tsAstOutlineProvider.refresh(node));
 	vscode.commands.registerCommand('tsAstOutline.renameNode', node => tsAstOutlineProvider.rename(node));
 	vscode.commands.registerCommand('tsAstOutline.refactorNode', node => tsAstOutlineProvider.refactorNode(node));
@@ -19,7 +18,6 @@ export function readSettings(): Settings {
 		autoRefresh: vscode.workspace.getConfiguration('tsAstOutline').get('autorefresh')||false
 	}
 }
-
 export interface Settings {
 	autoRefresh: boolean
 }
@@ -29,4 +27,3 @@ export interface State {
 	/** user can toggle auto-refresh */
 	autoRefresh: boolean
 }
-

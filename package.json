@@ -1,10 +1,7 @@
 {
 	"name": "vscode-typescript-ast-outline",
-	
 	"version": "0.0.4",
-
 	"description": "vscode extension that adds a view in explorer panel that shows the Abstract Syntax Tree of active editor (TypeScript or JavaScript). Live updates and bindings from source code to the AST view. User can manipulate the ast nodes visually (removing, creating, moving, applying refactors, renaming, etc). Supports filtering and different AST view modes",
-
 	"scripts": {
 		"vscode:prepublish": "tsc -p ./",
 		"watch": "tsc --watch",
@@ -13,7 +10,6 @@
 	},
 	"main": "./out/src/extension",
 	"repository": "https://cancerberosgx.visualstudio.com/typescript-ast-outline",
-
 	"devDependencies": {
 		"typescript": "^2.9.1",
 		"vscode": "^1.1.18",
@@ -24,36 +20,33 @@
 	"dependencies": {
 		"ts-simple-ast": "^12.2.0"
 	},
-
-
+	"license": "MIT",
 	"keywords": [
-		"typescript", "javascript", "AST", "outline"
+		"typescript",
+		"javascript",
+		"AST",
+		"outline"
 	],
-
-
 	"publisher": "cancerberosgx",
 	"engines": {
 		"vscode": "^1.23.0"
 	},
 	"displayName": "TypeScript AST Outline",
-	
 	"categories": [
-		"Other", "Programming Languages"
+		"Other",
+		"Programming Languages"
 	],
-
-	
 	"activationEvents": [
 		"onView:tsAstOutline",
 		"onLanguage:typescript",
 		"onLanguage:javascript"
 	],
-
 	"contributes": {
 		"views": {
 			"explorer": [
 				{
 					"id": "tsAstOutline",
-					"name": "TS Outline",
+					"name": "TS AST Outline",
 					"when": "tsAstOutlineEnabled"
 				}
 			]
@@ -68,8 +61,8 @@
 				}
 			},
 			{
-				"command": "tsAstOutline.changeMode",
-				"title": "Change Mode",
+				"command": "tsAstOutline.toggleASTMode",
+				"title": "Toggle AST mode",
 				"icon": {
 					"light": "resources/light/dependency.svg",
 					"dark": "resources/dark/dependency.svg"
@@ -83,60 +76,128 @@
 					"dark": "resources/dark/refresh.svg"
 				}
 			},
-
 			{
 				"command": "tsAstOutline.renameNode",
-				"title": "Rename"
+				"title": "Rename",
+				"icon": {
+					"light": "resources/light/rename.svg",
+					"dark": "resources/dark/rename.svg"
+				}
 			},
 			{
 				"command": "tsAstOutline.removeNode",
-				"title": "Remove"
+				"title": "Remove",
+				"icon": {
+					"light": "resources/light/remove.svg",
+					"dark": "resources/dark/remove.svg"
+				}
 			},
 			{
 				"command": "tsAstOutline.addChild",
-				"title": "Add Child"
+				"title": "Add Child",
+				"icon": {
+					"light": "resources/light/add.svg",
+					"dark": "resources/dark/add.svg"
+				}
 			},
 			{
 				"command": "tsAstOutline.refactorNode",
-				"title": "Refactor"
+				"title": "Refactor",
+				"icon": {
+					"light": "resources/light/refactor.svg",
+					"dark": "resources/dark/refactor.svg"
+				}
+			},
+			{
+				"command": "tsAstOutline.toggleHideUnnamedNodes",
+				"title": "Toggle hide unnamed nodes"
+			},
+			{
+				"command": "tsAstOutline.toggleHideNodeKindNames",
+				"title": "Toggle hide node kind names"
+			},
+			{
+				"command": "tsAstOutline.collapseAll",
+				"title": "Collapse All",
+				"icon": {
+					"light": "resources/light/collapse.svg",
+					"dark": "resources/dark/collapse.svg"
+				}
+			},
+			{
+				"command": "tsAstOutline.collapse",
+				"title": "Collapse",
+				"icon": {
+					"light": "resources/light/collapse.svg",
+					"dark": "resources/dark/collapse.svg"
+				}
 			}
 		],
 		"menus": {
 			"view/title": [
+				{
+					"command": "tsAstOutline.collapseAll",
+					"when": "view == tsAstOutline",
+					"group": "navigation"
+				},
 				{
 					"command": "tsAstOutline.refresh",
 					"when": "view == tsAstOutline",
 					"group": "navigation"
 				},
 				{
-					"command": "tsAstOutline.changeMode",
+					"command": "tsAstOutline.toggleHideUnnamedNodes",
 					"when": "view == tsAstOutline",
-					"group": "navigation"
+					"group": "2_workspace"
+				},
+				{
+					"command": "tsAstOutline.toggleASTMode",
+					"when": "view == tsAstOutline",
+					"group": "2_workspace"
+				},
+				{
+					"command": "tsAstOutline.toggleHideNodeKindNames",
+					"when": "view == tsAstOutline",
+					"group": "2_workspace",
+					"type": "toggle"
 				}
 			],
 			"view/item/context": [
-				{
-					"command": "tsAstOutline.renameNode",
-					"when": "view == tsAstOutline"
-				},
-				{
-					"command": "tsAstOutline.refactorNode",
-					"when": "view == tsAstOutline"
-				},
 				{
 					"command": "tsAstOutline.refreshNode",
 					"when": "view == tsAstOutline",
 					"group": "inline"
 				},
 				{
+					"command": "tsAstOutline.collapse",
+					"when": "view == tsAstOutline",
+					"group": "inline"
+				},
+				{
+					"command": "tsAstOutline.refresh",
+					"when": "view == tsAstOutline",
+					"group": "navigation"
+				},
+				{
+					"command": "tsAstOutline.renameNode",
+					"when": "view == tsAstOutline",
+					"group": "navigation"
+				},
+				{
+					"command": "tsAstOutline.refactorNode",
+					"when": "view == tsAstOutline",
+					"group": "navigation"
+				},
+				{
 					"command": "tsAstOutline.removeNode",
-					"when": "view == tsAstOutline"
+					"when": "view == tsAstOutline",
+					"group": "navigation"
 				},
 				{
 					"command": "tsAstOutline.addChild",
-					"when": "view == tsAstOutline"
+					"when": "view == tsAstOutline",
+					"group": "navigation"
 				}
-
 			]
 		},
 		"configuration": [
@@ -145,7 +206,7 @@
 				"properties": {
 					"tsAstOutline.autorefresh": {
 						"type": "boolean",
-						"default": true, 
+						"default": true,
 						"description": "Should the AST Outline View and the Code Editor be synchronized whether the user scrolls, select, or make modifications in any of them? or should the user be responsible of refreshing th ast outline view manually ? "
 					}
 				}

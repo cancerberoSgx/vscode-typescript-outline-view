@@ -10,7 +10,8 @@
 // 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
 // 		public readonly command?: vscode.Command
 // 	) {
-// 		super(label, collapsibleState);
+//     super(label, collapsibleState);
+//     this.command
 // 	}
 
 // 	get tooltip(): string {

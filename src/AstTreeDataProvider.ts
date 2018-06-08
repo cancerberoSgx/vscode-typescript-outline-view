@@ -6,7 +6,9 @@ import { getNodeName, getChildren, getNodeInSelection } from './AstUtil';
 import { State, Settings, readSettings } from './extension';
 
 /**
- * this is the class with most reponsibilities in this extension
+ * this is the the most important class of this extension. It provides the data to the tree view. It delegates
+ * AST-related responsibility to ProjectManager and ASTUtil. it delegate TreeItem information to AstTreeItem.
+ * It handles handles all events - both users and editor's and install / manage mentioned tools.
  */
 export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 	
@@ -55,7 +57,8 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 	//ACTIONS
 
 	private nodeDontSupportActionMessage = (actionName:string)=>`Sorry, this node doesn\'t support ${actionName}.\nPerhaps try with an ancestor instead ?`
-	async changeMode() {
+	
+	async toggleASTMode() {
 		this.projectOptions.mode = this.projectOptions.mode === 'getChildren' ? 'forEachChildren' : 'getChildren'
 		await this.refresh()
 	}
