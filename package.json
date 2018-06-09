@@ -120,8 +120,8 @@
 				"command": "tsAstOutline.collapseAll",
 				"title": "Collapse All",
 				"icon": {
-					"light": "resources/light/collapse.svg",
-					"dark": "resources/dark/collapse.svg"
+					"light": "resources/light/collapseAll.svg",
+					"dark": "resources/dark/collapseAll.svg"
 				}
 			},
 			{

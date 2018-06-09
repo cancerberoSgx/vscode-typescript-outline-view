@@ -1,4 +1,14 @@
-export class Fruit {
+import { EventEmitter } from "events";
+
+
+declare namespace seba {
+export const uno = 1
+}
+
+const dos = 1+1
+
+
+export class Fruit extends EventEmitter {
   color: string
 
   drop(to: Place){
@@ -40,7 +50,9 @@ var a = 9
 
 
 
-
+const fff = function(){
+  return ()=>{}
+}
 
 
 

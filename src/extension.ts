@@ -10,7 +10,11 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('tsAstOutline.refactorNode', node => tsAstOutlineProvider.refactorNode(node));
 	vscode.commands.registerCommand('tsAstOutline.removeNode', node => tsAstOutlineProvider.removeNode(node));
 	vscode.commands.registerCommand('tsAstOutline.addChild', node => tsAstOutlineProvider.addChild(node));
-	vscode.commands.registerCommand('extension.openJsonSelection', range => tsAstOutlineProvider.select(range));
+	vscode.commands.registerCommand('tsAstOutline.selectTreeItem', range => tsAstOutlineProvider.select(range));
+
+	// vscode.commands.registerCommand('extension.openJsonSelection', range => tsAstOutlineProvider.select(range));
+	// tsAstOutline.collapseAll
+
 }
 
 export function readSettings(): Settings {

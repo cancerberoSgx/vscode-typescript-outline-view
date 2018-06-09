@@ -160,11 +160,11 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 	// TODO: move this to AstTreeItem.ts
 
 	getTreeItem(node: tsa.Node): vscode.TreeItem {
-		// let hasChildren = node.getChildren() && node.getChildren().length
-		let treeItem: vscode.TreeItem = new vscode.TreeItem(this.getLabel(node), vscode.TreeItemCollapsibleState.Collapsed)
+		const hasChildren = !!node.getChildren().length
+		let treeItem: vscode.TreeItem = new vscode.TreeItem(this.getLabel(node), hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None)
 			// TODO: perhaps some special nodes like decls could be expanded  vscode.TreeItemCollapsibleState.Collapsed , vscode.TreeItemCollapsibleState.Expanded :  hasChildren ?	vscode.TreeItemCollapsibleState.Collapsed	: node.TreeItemCollapsibleState.None
 		treeItem.command = {
-			command: 'extension.openJsonSelection',
+			command: 'tsAstOutline.selectTreeItem',
 			title: 'treeitem command title',
 			tooltip: 'treeitem command tooltip',
 			arguments: [node],
@@ -175,33 +175,76 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 		return treeItem
 	}
 
-	private getIcon(node: tsa.Node): any { // TODO: decide icons
-		if (tsa.TypeGuards.isStatement(node)) {
+	private getIcon(node: tsa.Node): any {
+		if (tsa.TypeGuards.isInterfaceDeclaration(node)) {
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'interface.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'interface.svg'))
+			}
+		}
+		else if (tsa.TypeGuards.isClassDeclaration(node)) {
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'class.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'class.svg'))
+			}
+		}
+		else if (tsa.TypeGuards.isImportDeclaration(node)) {	
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'import.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'import.svg'))
+			}
+		}
+		else if (tsa.TypeGuards.isMethodDeclaration(node)||tsa.TypeGuards.isMethodSignature(node)||
+		tsa.TypeGuards.isFunctionDeclaration(node)||tsa.TypeGuards.isFunctionLikeDeclaration(node)||tsa.TypeGuards.isFunctionExpression(node)||tsa.TypeGuards.isFunctionTypeNode(node)) {	
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'method.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'method.svg'))
+			}
+		}
+		else if (tsa.TypeGuards.isPropertyDeclaration(node)||tsa.TypeGuards.isPropertyDeclaration(node)||
+		tsa.TypeGuards.isPropertySignature(node)||tsa.TypeGuards.isPropertyNamedNode(node)) {	
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'property.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'property.svg'))
+			}
+		}
+		else if (tsa.TypeGuards.isBooleanLiteral(node)||tsa.TypeGuards.isBooleanKeyword(node)) {
 			return {
 				light: this.context.asAbsolutePath(path.join('resources', 'light', 'boolean.svg')),
 				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'boolean.svg'))
 			}
 		}
-		if (tsa.TypeGuards.isLiteralExpression(node) || tsa.TypeGuards.isLiteralLikeNode(node)) {
+		else if (tsa.TypeGuards.isLiteralExpression(node) || tsa.TypeGuards.isLiteralLikeNode(node)) {
 			return {
 				light: this.context.asAbsolutePath(path.join('resources', 'light', 'string.svg')),
 				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'string.svg'))
 			}
 		}
-		if (tsa.TypeGuards.isStatementedNode(node)) {
+		else if (tsa.TypeGuards.isNumberKeyword(node) || tsa.TypeGuards.isNumericLiteral(node)) {
 			return {
 				light: this.context.asAbsolutePath(path.join('resources', 'light', 'number.svg')),
 				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'number.svg'))
 			}
 		}
+		else if (tsa.ts.isTypeOperatorNode(node.compilerNode)) {
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'operator.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'operator.svg'))
+			}
+		}
+		else if (tsa.TypeGuards.isNamespaceDeclaration(node)) {
+			return {
+				light: this.context.asAbsolutePath(path.join('resources', 'light', 'namespace.svg')),
+				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'namespace.svg'))
+			}
+		}
 		return null;
 	}
 
-	private getLabel(node: tsa.Node): string {
+	private getLabel(node: tsa.Node, kindName: boolean = true): string {
 		const name = getNodeName(node)||''
-		return `${name}${(name ? '(' : '') + node.getKindName() + (name ? ')' : '')}`
+		const kindNameString = ` ${!name ? '' : '('}${node.getKindName()}${!name ? '' : ')'}`
+		return `${name}${kindNameString}`
 	}
-
-
 
 }
