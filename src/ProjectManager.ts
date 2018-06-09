@@ -57,12 +57,12 @@ export class ProjectManager {
     return Promise.resolve()
   }
 
-	async save() {
-	  if (!this._project) {
-      throw new Error('save() called before refresh()')
-    }
-    await this._project.save()
-  }
+	// async save() {
+	//   if (!this._project) {
+  //     throw new Error('save() called before refresh()')
+  //   }
+  //   await this._project.save()
+  // }
   
   async getRefactorsFor(node: tsa.Node) {
     if (node.getKind() === tsa.SyntaxKind.SourceFile) {
@@ -74,8 +74,7 @@ export class ProjectManager {
       includeCompletionsWithInsertText: true,
       allowTextChangesInNewFiles: true
       // TODO : we should respect the user regarding quotepreference and import importModuleSpecifierPreference
-      // quotePreference?: "double" | "single";
-      // importModuleSpecifierPreference?: "relative" | "non-relative";
+      // quotePreference?: "double" | "single"; importModuleSpecifierPreference?: "relative" | "non-relative";
     }
     const refactors = this.project.getLanguageService().compilerObject.getApplicableRefactors(
       this.currentSourceFile.getFilePath(), { pos: node.getPos(), end: node.getEnd() }, userPreferences)
@@ -89,25 +88,25 @@ export class ProjectManager {
     return Object.keys(applicableRefactorsMap)
   }
 
-  nodeCanBeRenamed(node: tsa.Node) {
-    return (node as any).rename
+  nodeCanBeRenamed(node: tsa.Node): boolean {
+    return !!(node as any).rename
   }
 
   async renameNode(node: tsa.Node, name: string) {
     if(this.nodeCanBeRenamed(node)){
       (node as any).rename(name)
-      await this.project.save()
+      await this.project.saveSync()
     }
   }
 
-	nodeCanBeRemoved(node: tsa.Node): any {
-    return (node as any).remove
+	nodeCanBeRemoved(node: tsa.Node): boolean {
+    return !!(node as any).remove
   }
   
 	async removeNode(node: tsa.Node) {
     if(this.nodeCanBeRemoved(node)){
       (node as any).remove()
-      await this.project.save()
+      await this.project.saveSync()
     }
 	}
 }

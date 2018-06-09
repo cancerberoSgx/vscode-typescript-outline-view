@@ -1,6 +1,6 @@
-import { Node, SyntaxKind, SourceFile } from "ts-simple-ast";
+import { Node, SourceFile, SyntaxKind } from "ts-simple-ast";
 import * as vscode from 'vscode';
-import { State } from "./extension";
+import { State } from "./AstTreeDataProvider";
 
 export function getNodeName(node: Node): string | undefined {
   return (node as any).getName ? (node as any).getName() :
@@ -13,7 +13,7 @@ export async function getChildren(node: Node | undefined, options: State, defaul
     return []
   }
   let children: Node[]
-  if (options.mode === 'getChildren') { 
+  if (options.mode === 'getChildren') {
     children = target.getChildren()
   }
   else {

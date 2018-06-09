@@ -1,9 +1,20 @@
-import * as path from 'path';
 import * as tsa from 'ts-simple-ast';
 import * as vscode from 'vscode';
 import { ProjectManager } from './ProjectManager';
-import { getNodeName, getChildren, getNodeInSelection } from './AstUtil';
-import { State, Settings, readSettings } from './extension';
+import { getChildren, getNodeInSelection, getNodeName } from './AstUtil';
+import { Settings, readSettings } from './extension';
+import { AstTreeItem } from './AstTreeItem';
+
+/**
+ * internal state of the tree view
+ */
+export interface State { 
+  mode: 'getChildren' | 'forEachChildren'
+	/** user can toggle auto-refresh */
+	autoRefresh: boolean
+	/** the current flag for collapseAll - internal */
+	collapseAll: boolean
+}
 
 /**
  * this is the the most important class of this extension. It provides the data to the tree view. It delegates
@@ -17,27 +28,28 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 	private editor: vscode.TextEditor|undefined;
 	private project: ProjectManager;
-	private projectOptions: State 
+	private state: State 
 	private settings: Settings
 	private treeView: vscode.TreeView<tsa.Node>
 	
 	constructor(private context: vscode.ExtensionContext) {
-		vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
-		vscode.workspace.onDidChangeTextDocument(e => this.onDocumentChanged(e));
+		vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged())
+		vscode.workspace.onDidChangeTextDocument(e => this.onDocumentChanged(e))
 		this.settings = readSettings()
 		vscode.workspace.onDidChangeConfiguration(() => {
 			this.settings = readSettings()
-		});
+		})
 		this.project = new ProjectManager()
 		vscode.window.onDidChangeTextEditorSelection(e => this.onTextEditorSelectionChanged())
 
 		this.treeView = vscode.window.createTreeView('tsAstOutline', { treeDataProvider: this })
-		this.onActiveEditorChanged();
+		this.onActiveEditorChanged()
 
-		this.editor = vscode.window.activeTextEditor;
-		this.projectOptions = {
+		this.editor = vscode.window.activeTextEditor
+		this.state = {
 			autoRefresh: this.settings.autoRefresh,
-			mode: 'forEachChildren'
+			mode: 'forEachChildren', 
+			collapseAll: false
 		}
 	}
 
@@ -45,22 +57,34 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 	async getChildren(node?: tsa.Node): Promise<tsa.Node[]> {
 		await this.project.refresh()
-		return getChildren(node, this.projectOptions, this.project.currentSourceFile)
+		return getChildren(node, this.state, this.project.currentSourceFile)
 	}
 
 	getParent(node: tsa.Node): tsa.Node {
 		return node.getParent() || this.project.currentSourceFile
 	}
 
+	getTreeItem(node: tsa.Node): vscode.TreeItem {
+		return new AstTreeItem(node, this.context, this.state)
+	}
 
 
-	//ACTIONS
 
-	private nodeDontSupportActionMessage = (actionName:string)=>`Sorry, this node doesn\'t support ${actionName}.\nPerhaps try with an ancestor instead ?`
+	// ACTIONS (command implementations)
+
+	private nodeDontSupportActionMessage = (actionName:string)=>`Sorry, this node doesn\'t support ${actionName}.
+Perhaps try with an ancestor instead ?`
 	
 	async toggleASTMode() {
-		this.projectOptions.mode = this.projectOptions.mode === 'getChildren' ? 'forEachChildren' : 'getChildren'
+		this.state.mode = this.state.mode === 'getChildren' ? 'forEachChildren' : 'getChildren'
 		await this.refresh()
+	}
+
+	async collapseAll() {
+		debugger
+		this.state.collapseAll = true
+		await this.refresh()
+		this.state.collapseAll = false
 	}
 
 	async rename(node: tsa.Node) {
@@ -79,16 +103,23 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 		if (refactors && refactors.length) {
 			const selected = await vscode.window.showQuickPick(refactors, { canPickMany: false })
 			vscode.window.showErrorMessage('Operation not implemented yet, sorry - WIP')
-			// console.log('TODO: selected: '+selected);//TODO: implement this - how to trigger refactor programmatically ? - delegate in project manager - this.project.applyRefactor(selected)
+			// console.log('TODO: selected: '+selected);
+			//TODO: implement this - how to trigger refactor programmatically ? - delegate in project manager - this.project.applyRefactor(selected)
 		}
 	}
 
 	async removeNode(node: tsa.Node) {
 		if(!this.project.nodeCanBeRemoved(node)){
-			return await vscode.window.showErrorMessage(this.nodeDontSupportActionMessage('rename'))
+			return await vscode.window.showErrorMessage(this.nodeDontSupportActionMessage('remove'))
 		}
-		this.project.removeNode(node)
-		await this.refresh()
+		const selected = await vscode.window.showQuickPick(['Yes', 'No'], { 
+			canPickMany: false, 
+			placeHolder: `Are you sure you want to remove ${getNodeName(node) || 'selected'} node ?`
+		})
+		if(selected === 'Yes') {
+			this.project.removeNode(node)
+			await this.refresh()
+		}
 	}
 
 	async addChild(node: tsa.Node) {
@@ -97,50 +128,11 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 
 
 
-	// EDITOR EVENT HANDLERS
-
-	private async onActiveEditorChanged() {
-		await this.project.refresh()
-		if (vscode.window.activeTextEditor) {
-			if (vscode.window.activeTextEditor.document.uri.scheme === 'file') {
-				const enabled = vscode.window.activeTextEditor.document.languageId === 'typescript' || vscode.window.activeTextEditor.document.languageId === 'javascript';
-				vscode.commands.executeCommand('setContext', 'tsAstOutlineEnabled', enabled);
-				if (enabled) {
-					this.editor = vscode.window.activeTextEditor;
-					this.refresh();
-					this.onTextEditorSelectionChanged()
-				}
-			}
-		} else {
-			vscode.commands.executeCommand('setContext', 'tsAstOutlineEnabled', false);
-		}
-	}
-
-	private async onDocumentChanged(changeEvent: vscode.TextDocumentChangeEvent): Promise<void> {
-		if(!this.editor){return}
-		if (this.settings.autoRefresh && changeEvent.document.uri.toString() === this.editor.document.uri.toString()) {
-			for (const change of changeEvent.contentChanges) {
-				await this.project.refresh()
-				this._onDidChangeTreeData.fire(this.project.currentSourceFile || null); // TODO: refined
-			}
-		}
-	}
-
-	private async onTextEditorSelectionChanged() {
-		if(!this.editor){return}
-		await this.project.refresh()
-		const node = getNodeInSelection(this.editor.selection, this.project.currentSourceFile)
-		if (node) {
-			this.treeView.reveal(node, { select: true }) // TODO: select: true or false ? - configurable ? 
-		}
-	}
-
-
 
 	// TREE VIEW EVENT HANDLERS
 	
 	select(node: tsa.Node) {
-		if(!this.editor){return}
+		if(!this.editor){debugger; return}
 		const start = this.editor.document.positionAt(node.getFullStart())
 		const end = this.editor.document.positionAt(node.getEnd())
 		this.editor.selection = new vscode.Selection(start, end);
@@ -153,98 +145,47 @@ export class AstTreeDataProvider implements vscode.TreeDataProvider<tsa.Node> {
 	}
 
 
-	
 
 
-	// TREE ITEM STUFF
-	// TODO: move this to AstTreeItem.ts
+	// EDITOR EVENT HANDLERS
 
-	getTreeItem(node: tsa.Node): vscode.TreeItem {
-		const hasChildren = !!node.getChildren().length
-		let treeItem: vscode.TreeItem = new vscode.TreeItem(this.getLabel(node), hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None)
-			// TODO: perhaps some special nodes like decls could be expanded  vscode.TreeItemCollapsibleState.Collapsed , vscode.TreeItemCollapsibleState.Expanded :  hasChildren ?	vscode.TreeItemCollapsibleState.Collapsed	: node.TreeItemCollapsibleState.None
-		treeItem.command = {
-			command: 'tsAstOutline.selectTreeItem',
-			title: 'treeitem command title',
-			tooltip: 'treeitem command tooltip',
-			arguments: [node],
-		};
-		treeItem.iconPath = this.getIcon(node)
-		treeItem.tooltip = node.getText().substring(0, Math.min(node.getText().length, 40))
-		treeItem.contextValue = node.getKindName()
-		return treeItem
+	private async onActiveEditorChanged() {
+		this.editor = undefined
+		if (vscode.window.activeTextEditor) {
+			if (vscode.window.activeTextEditor.document.uri.scheme === 'file') {
+				const enabled = vscode.window.activeTextEditor.document.languageId === 'typescript' || vscode.window.activeTextEditor.document.languageId === 'javascript';
+				vscode.commands.executeCommand('setContext', 'tsAstOutlineEnabled', enabled);
+				if (enabled) {
+					this.editor = vscode.window.activeTextEditor;
+					await this.project.refresh()
+					await this.refresh();
+					this.onTextEditorSelectionChanged()
+				}
+			}
+		} else {
+			vscode.commands.executeCommand('setContext', 'tsAstOutlineEnabled', false);
+		}
 	}
 
-	private getIcon(node: tsa.Node): any {
-		if (tsa.TypeGuards.isInterfaceDeclaration(node)) {
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'interface.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'interface.svg'))
+	private async onDocumentChanged(changeEvent: vscode.TextDocumentChangeEvent): Promise<void> {
+		if(!this.editor){debugger; return}
+		if (this.settings.autoRefresh && changeEvent.document.uri.toString() === this.editor.document.uri.toString()) {
+			for (const change of changeEvent.contentChanges) {
+				await this.project.refresh()
+				this._onDidChangeTreeData.fire(this.project.currentSourceFile || null); // TODO: refined
 			}
 		}
-		else if (tsa.TypeGuards.isClassDeclaration(node)) {
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'class.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'class.svg'))
-			}
-		}
-		else if (tsa.TypeGuards.isImportDeclaration(node)) {	
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'import.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'import.svg'))
-			}
-		}
-		else if (tsa.TypeGuards.isMethodDeclaration(node)||tsa.TypeGuards.isMethodSignature(node)||
-		tsa.TypeGuards.isFunctionDeclaration(node)||tsa.TypeGuards.isFunctionLikeDeclaration(node)||tsa.TypeGuards.isFunctionExpression(node)||tsa.TypeGuards.isFunctionTypeNode(node)) {	
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'method.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'method.svg'))
-			}
-		}
-		else if (tsa.TypeGuards.isPropertyDeclaration(node)||tsa.TypeGuards.isPropertyDeclaration(node)||
-		tsa.TypeGuards.isPropertySignature(node)||tsa.TypeGuards.isPropertyNamedNode(node)) {	
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'property.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'property.svg'))
-			}
-		}
-		else if (tsa.TypeGuards.isBooleanLiteral(node)||tsa.TypeGuards.isBooleanKeyword(node)) {
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'boolean.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'boolean.svg'))
-			}
-		}
-		else if (tsa.TypeGuards.isLiteralExpression(node) || tsa.TypeGuards.isLiteralLikeNode(node)) {
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'string.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'string.svg'))
-			}
-		}
-		else if (tsa.TypeGuards.isNumberKeyword(node) || tsa.TypeGuards.isNumericLiteral(node)) {
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'number.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'number.svg'))
-			}
-		}
-		else if (tsa.ts.isTypeOperatorNode(node.compilerNode)) {
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'operator.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'operator.svg'))
-			}
-		}
-		else if (tsa.TypeGuards.isNamespaceDeclaration(node)) {
-			return {
-				light: this.context.asAbsolutePath(path.join('resources', 'light', 'namespace.svg')),
-				dark: this.context.asAbsolutePath(path.join('resources', 'dark', 'namespace.svg'))
-			}
-		}
-		return null;
 	}
 
-	private getLabel(node: tsa.Node, kindName: boolean = true): string {
-		const name = getNodeName(node)||''
-		const kindNameString = ` ${!name ? '' : '('}${node.getKindName()}${!name ? '' : ')'}`
-		return `${name}${kindNameString}`
+	private async onTextEditorSelectionChanged() {
+		if(!this.editor){debugger; return}
+		await this.project.refresh()
+		const node = getNodeInSelection(this.editor.selection, this.project.currentSourceFile)
+		if (node) {
+			this.treeView.reveal(node, { select: true }) // TODO: select: true or false ? - configurable ? 
+		}
 	}
+
+
 
 }

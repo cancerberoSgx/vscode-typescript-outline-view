@@ -1,6 +1,6 @@
 {
 	"name": "vscode-typescript-ast-outline",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "vscode extension that adds a view in explorer panel that shows the Abstract Syntax Tree of active editor (TypeScript or JavaScript). Live updates and bindings from source code to the AST view. User can manipulate the ast nodes visually (removing, creating, moving, applying refactors, renaming, etc). Supports filtering and different AST view modes",
 	"scripts": {
 		"vscode:prepublish": "tsc -p ./",
@@ -202,9 +202,9 @@
 		},
 		"configuration": [
 			{
-				"title": "TS Outline",
+				"title": "TS AST Outline",
 				"properties": {
-					"tsAstOutline.autorefresh": {
+					"tsAstOutline.autoRefresh": {
 						"type": "boolean",
 						"default": true,
 						"description": "Should the AST Outline View and the Code Editor be synchronized whether the user scrolls, select, or make modifications in any of them? or should the user be responsible of refreshing th ast outline view manually ? "

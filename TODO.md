@@ -9,7 +9,6 @@ also for each open editor dirty update sourcefile content from from there.
 
 # project / code 
 
- * move treenode responsibilities from dataprovider to asttreeitem
 
 # js
 
@@ -34,10 +33,17 @@ also for each open editor dirty update sourcefile content from from there.
    auto-refresh
  * toggle "hide kind names"
  * toggle hide unnamed nodes
+ * toggle show only exported nodes
+ * toggle show only public members
+ * search
+ * order by name
+ * order by position
+ * order by   
 
 # editor
 
- * when cursor changes in editor (code) the tree view should follow expanding and scrolling to that node. Make it configurable because of performance
+ * when cursor changes in editor (code) the tree view should follow expanding and scrolling to that node.
+   That's done but make it configurable because of performance
  
 
 ## Testing 
@@ -61,8 +67,9 @@ also for each open editor dirty update sourcefile content from from there.
    doesnt support it.
  * keybindings dor activating context menu or individual actions like remove - format, rename, refactor, etc
 
-# nice to have
 
+
+# nice to have / long term / future 
 
 
 
@@ -79,3 +86,4 @@ also for each open editor dirty update sourcefile content from from there.
  * test on very big files. and very big projects
  * test: work on changes not savedto fs ? 
  * test: is tsa well sync when working in the editor (open close, save - edit lots of files, etc ) ? 
+ * move treenode responsibilities from dataprovider to ASTTreeItem

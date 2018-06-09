@@ -30,3 +30,6 @@
  * new menu entries types "discovered"
  * collapse all, toggle hide kindnames, toggle hide unnamed nodes and more but no impl yet
  * lots of tree node icons
+ * move treenode responsibilities from dataprovider to ASTTreeItem
+
+## 0.0.5

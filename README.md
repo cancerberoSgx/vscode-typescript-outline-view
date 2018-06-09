@@ -1,3 +1,7 @@
+# WIP - not ready for production, yet
+
+Please wait a couple of days - when I consider ready I will remove this banner. Thanks. 
+
 # What 
 
 Adds a view in explorer panel that shows the Abstract Syntax Tree of active TypeScript or JavaScript editor.
@@ -29,7 +33,7 @@ Adds a view in explorer panel that shows the Abstract Syntax Tree of active Type
    when you need it
    
 
-# TODO
+# TODO - ROADMAP
 
 https://cancerberosgx.visualstudio.com/_git/typescript-ast-outline?path=%2FTODO.md&version=GBmaster
 

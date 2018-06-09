@@ -27,10 +27,6 @@ export interface Place {
 
 
 export class Uruguay implements Place {
-  measure(): number {
-    throw new Error("Method not implemented.");
-  }
-
 }
 
 export function foo() {
